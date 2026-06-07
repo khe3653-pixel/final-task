@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>홈베이킹 가이드 (계산기 & 도감)</title>
+    <style>
+        /* 배경, 디자인 */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #fdfaf6;
+            color: #4a3b32;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            color: #b85c38;
+            margin-bottom: 5px;
+        }
+
+        /* [UX 포인트] 메뉴 스타일 */
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border: 2px solid #b85c38;
+            background-color: white;
+            color: #b85c38;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        /* 활성화된 메뉴 스타일 */
+        .tab-button.active {
+            background-color: #b85c38;
+            color: white;
+        }
+
+        /* 설명 박스 기본 설정 */
+        .tab-content {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        /* active 클래스가 붙은 컨텐츠만 화면에 보임 */
+        .tab-content.active {
+            display: block;
+        }
+
+        /* --- 메뉴 1. 날짜 계산 --- */
+        .refrigerator {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .ingredient-card {
+            background-color: white;
+            border: 2px solid #e0d5c1;
+            border-radius: 12px;
+            padding: 15px;
+            width: 150px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .ingredient-card:hover {
+            transform: translateY(-3px);
+            border-color: #b85c38;
+        }
+
+        .calculator-section {
+            background-color: white;
+            border: 2px solid #b85c38;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+            display: none;
+        }
+
+        .info-box {
+            background-color: #fff5f0;
+            border-left: 5px solid #ff8a5c;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type="date"], button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        input[type="date"] { border: 1px solid #ccc; }
+        button {
+            background-color: #b85c38;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover { background-color: #8c4327; }
+
+        .result-box {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f1f8e9;
+            border: 1px solid #c5e1a5;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #33691e;
+            display: none;
+        }
+
+        /* --- 메뉴 2. 백과사전 --- */
+        .encyclopedia-search {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0d5c1;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        .book-item {
+            background-color: white;
+            border: 1px solid #e0d5c1;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .book-item h3 {
+            margin: 0 0 10px 0;
+            color: #b85c38;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge {
+            background-color: #ffeb3b;
+            color: #333;
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+
+        .substitute-box {
+            background-color: #f9f6f0;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border-left: 4px solid #b85c38;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>홈베이커를 위한 가이드북</h1>
+        <p>홈베이커를 위한 유통기한 계산기와 재료 대체 백과사전</p>
+    </header>
+
+    <div class="tab-container">
+        <button class="tab-button active" onclick="switchTab('calculator')">🗓️ 유통기한 계산기</button>
+        <button class="tab-button" onclick="switchTab('encyclopedia')">📚 재료 대체 백과사전</button>
+    </div>
+
+    <div id="calculator" class="tab-content active">
+        <div class="refrigerator">
+            <div class="ingredient-card" onclick="selectIngredient('휘핑크림(생크림)', 7, '개봉 후 냉장 보관 필수, 입구를 꽉 밀봉하고 일주일 내에 쓰세요.')">
+                <h2>🥛</h2>
+                <h3>휘핑크림</h3>
+            </div>
+            <div class="ingredient-card" onclick="selectIngredient('마스카포네 치즈', 5, '수분이 많아 곰팡이가 피기 쉬우니 깨끗한 도구만 접촉하세요.')">
+                <h2>🧀</h2>
+                <h3>마스카포네</h3>
+            </div>
+            <div class="ingredient-card" onclick="selectIngredient('수제 커스타드 크림', 2, '계란 노른자가 들어가 변질이 무척 빠릅니다. 이틀 내 소비 권장')">
+                <h2>🍮</h2>
+                <h3>커스타드 크림</h3>
+            </div>
+        </div>
+
+        <div class="calculator-section" id="calcSection">
+            <h2 id="selectedName">재료를 선택해 주세요</h2>
+            <div class="info-box">
+                <strong>💡 보관 꿀팁:</strong>
+                <p id="storageTip" style="margin: 5px 0 0 0;"></p>
+            </div>
+            <label for="openDate">📅 이 재료를 언제 개봉/제작하셨나요?</label>
+            <input type="date" id="openDate">
+            <button onclick="calculateExpiry()" style="margin-top: 15px;">안전 소비기한 계산하기</button>
+            <div class="result-box" id="resultBox"></div>
+        </div>
+    </div>
+
+    <div id="encyclopedia" class="tab-content">
+        <input type="text" id="searchInput" class="encyclopedia-search" onkeyup="filterEncyclopedia()" placeholder="🔍 궁금한 재료를 검색해 보세요! (예: 중력분, 버터)">
+
+        <div id="bookList">
+            <div class="book-item">
+                <h3>🌾 중력분 (다목적 밀가루) <span class="badge">밀가루</span></h3>
+                <p>쿠키, 파운드케이크, 수제비 등 다양한 요리에 두루 쓰이는 밀가루입니다.</p>
+                <div class="substitute-box">
+                    <strong>🔄 대체 방법 (박력분으로 대체하기):</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 14px; line-height: 1.5;">
+                        집에 중력분이 없다면 >박력분<으로 대체할 수 있습니다. 다만 박력분은 글루텐 함량이 낮아 식감이 너무 가벼워질 수 있으니, "박력분 90%에 강력분을 10% 섞거나", 박력분만 사용할 경우 액체 류(우유, 계란)의 양을 아주 미세하게 줄이면 좋습니다.
+                    </p>
+                </div>
+            </div>
+
+            <div class="book-item">
+                <h3>🧈 무염 버터 <span class="badge">유지류</span></h3>
+                <p>베이킹의 풍미와 식감을 책임지는 가장 핵심적인 재료입니다.</p>
+                <div class="substitute-box">
+                    <strong>🔄 대체 방법 (식용유나 가염버터로 대체하기):</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 14px; line-height: 1.5;">
+                        1. >가염 버터로 대체:< 소금이 들어있으므로 레시피에 포함된 소금 소량을 생략하세요.<br>
+                        2. >식물성 오일(카놀라유 등)로 대체:< 쿠키류는 버터 특유의 결이 사라지니 추천하지 않지만, 머핀이나 파운드케이크는 버터 분량의 80% 정도의 오일로 대체하면 촉촉하게 구워집니다. (향이 강한 올리브유는 추천하지 않음)
+                    </p>
+                </div>
+            </div>
+
+            <div class="book-item">
+                <h3>🥛 베이킹 파우더 <span class="badge">팽창제</span></h3>
+                <p>반죽을 위와 옆으로 부풀려 폭신한 식감을 만들어주는 재료입니다.</p>
+                <div class="substitute-box">
+                    <strong>🔄 대체 방법 (베이킹 소다로 대체하기):</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 14px; line-height: 1.5;">
+                        베이킹 파우더 대신 "베이킹 소다"를 쓸 때는 >양을 1/3로 줄여야 합니다.< (소다가 팽창력이 훨씬 강함). 또한 베이킹 소다는 레몬즙, 요거트, 코코아 파우더 같은 산성 재료가 레시피에 있어야만 쓴맛 없이 부풀어 오르니 유의
+                    </p>
+                </div>
+            </div>
+
+            <div class="book-item">
+                <h3>🍯 올리고당 <span class="badge">당류</span></h3>
+                <p>단맛과 함께 촉촉한 수분감을 주기 위해 사용하는 재료입니다.</p>
+                <div class="substitute-box">
+                    <strong>🔄 대체 방법 (물엿이나 꿀로 대체하기):</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 14px; line-height: 1.5;">
+                        >물엿이나 쌀조청<으로 1:1 대체가 가능합니다. "꿀"로 대체할 경우 꿀은 올리고당보다 단맛이 강하고 향이 있으므로 양을 20% 정도 줄여서 넣는 것이 좋습니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // [기능 1] 탭 전환 함수
+        function switchTab(tabId) {
+            // 모든 탭 컨텐츠와 버튼에서 active 클래스 제거
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+
+            // 클릭한 탭의 컨텐츠와 버튼에 active 클래스 추가
+            document.getElementById(tabId).classList.add('active');
+            // 이벤트가 발생한 버튼을 찾아 활성화 (DOM 탐색 응용)
+            if(tabId === 'calculator') {
+                document.querySelectorAll('.tab-button')[0].classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-button')[1].classList.add('active');
+            }
+        }
+
+        // [기능 2] 계산기 - 재료 선택 기능
+        let currentIngredient = "";
+        let storageDays = 0;
+
+        function selectIngredient(name, days, tip) {
+            currentIngredient = name;
+            storageDays = days;
+            document.getElementById('calcSection').style.display = 'block';
+            document.getElementById('selectedName').innerText = "🔍 " + name;
+            document.getElementById('storageTip').innerText = tip;
+            document.getElementById('resultBox').style.display = 'none';
+            document.getElementById('openDate').value = "";
+        }
+
+        // [기능 3] 계산기 - 날짜 연산 기능
+        function calculateExpiry() {
+            const dateInput = document.getElementById('openDate').value;
+            if (!dateInput) {
+                alert("개봉 날짜를 선택해 주세요! 📅");
+                return;
+            }
+            const openedDate = new Date(dateInput);
+            openedDate.setDate(openedDate.getDate() + storageDays);
+
+            const year = openedDate.getFullYear();
+            const month = String(openedDate.getMonth() + 1).padStart(2, '0');
+            const day = String(openedDate.getDate()).padStart(2, '0');
+
+            const resultBox = document.getElementById('resultBox');
+            resultBox.innerHTML = `안전한 소비기한:<br><span style="color:#d32f2f; font-size:20px;">${year}년 ${month}월 ${day}일 카운트다운!</span>`;
+            resultBox.style.display = 'block';
+        }
+
+        // [기능 4] 백과사전 - 실시간 텍스트 검색 필터 기능 (교수님 취향저격 UX)
+        function filterEncyclopedia() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const bookItems = document.getElementsByClassName('book-item');
+
+            for (let i = 0; i < bookItems.length; i++) {
+                // 각 도감 아이템 안의 텍스트를 전부 모아 검색어 포함 여부 확인
+                const textContent = bookItems[i].textContent || bookItems[i].innerText;
+                if (textContent.toLowerCase().includes(input)) {
+                    bookItems[i].style.display = "block"; // 포함되면 보임
+                } else {
+                    bookItems[i].style.display = "none";  // 포함 안 되면 숨김
+                }
+            }
+        }
+    </script>
+</body>
+</html>
